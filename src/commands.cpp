@@ -4,12 +4,13 @@
 #include "commands.hpp"
 
 // Declaración de variables estáticas.
-const int Commands::COMMANDS[CANTIDAD_COMMANDS] = {0, 1, 2, 3, 4};
+const int Commands::COMMANDS[CANTIDAD_COMMANDS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 const int Commands::PIN_MOTOR_A[3] = {PIN_PWMA, PIN_AIN2, PIN_AIN1};
 const int Commands::PIN_MOTOR_B[3] = {PIN_PWMB, PIN_BIN2, PIN_BIN1};
 
 Servo Commands::servo1;
 Servo Commands::servo2;
+Servo Commands::servo3; // Pequeño.
 
 /**
  * @brief Constructor de la clase Commands.
@@ -28,6 +29,11 @@ Commands::Commands() {
 void Commands::initPins() {
     servo1.attach(SERVO_PIN_1);
     servo2.attach(SERVO_PIN_2);
+    servo3.attach(SERVO_PIN_3);
+
+    servo1.write(POSICION_1);
+    servo2.write(POSICION_GRADO_INICIAL);
+    servo3.write(POSICION_INICIAL);
 
     pinMode(PIN_AIN2, OUTPUT);
     pinMode(PIN_AIN1, OUTPUT);
@@ -39,6 +45,10 @@ void Commands::initPins() {
 } // initPins().
 
 // Funciones que controlan los motores.
+void Commands::enableMotors() {
+    digitalWrite(PIN_STBY, HIGH);
+} // enableMotors().
+
 void Commands::moveMotorForward(const int PIN_MOTOR[3], uint8_t speed) {
     digitalWrite(PIN_MOTOR[1], HIGH);
     digitalWrite(PIN_MOTOR[2], LOW);
@@ -85,10 +95,6 @@ void Commands::fullStop() {
     stopMotor(PIN_MOTOR_B);
 } // fullStop().
 
-void Commands::enableMotors() {
-    digitalWrite(PIN_STBY, HIGH);
-} // enableMotors().
-
 // Funciones que controlan los servomotores angular y lineal.
 String Commands::pinServoAngular(uint8_t flag) {
     if (flag == 2) {
@@ -102,19 +108,19 @@ String Commands::pinServoAngular(uint8_t flag) {
         delay(WAIT_TIME);
         return "Pinza angular cerrada.";
     }
-} // pinSerAng().
+} // pinServoAngular().
 
 String Commands::pinServoLineal(uint8_t flag) {
     if (flag == 2) {
         servo1.write(POSICION_2);
         delay(WAIT_TIME);
-        return "Pinza lineal abierta.";
+        return "Pinza lineal cerrada.";
     }
 
     if (flag == 1) {
         servo1.write(POSICION_1);
         delay(WAIT_TIME);
-        return "Pinza lineal cerrada.";
+        return "Pinza lineal abierta.";
     }
 } // pinServoLineal().
 
@@ -186,31 +192,33 @@ String Commands::procesarCommand(uint8_t command) {
         case 5:
             enableMotors();
             move(forward, SPEED_1, 1);
-            delay(200);
-            disableMotors();
-            delay(WAIT_TIME);
+            delay(100);
+            fullStop();
             return "Avance.";
         
         case 6:
             enableMotors();
             move(backward, SPEED_1, 1);
-            delay(200);
-            disableMotors();
-            delay(WAIT_TIME);
+            delay(100);
+            fullStop();
             return "Retroceso.";
         
         case 7:
             enableMotors();
-            move(forward, SPEED_2, 2);
-            delay(10);
-            disableMotors();
+            digitalWrite(PIN_MOTOR_B[1], HIGH);
+            digitalWrite(PIN_MOTOR_B[2], LOW);
+            analogWrite(PIN_MOTOR_B[0], SPEED_2);
+            delay(30);
+            fullStop();
             return "Giro a la derecha.";
         
         case 8:
             enableMotors();
-            move(backward, SPEED_2, 2);
-            delay(10);
-            disableMotors();
+            digitalWrite(PIN_MOTOR_B[1], LOW);
+            digitalWrite(PIN_MOTOR_B[2], HIGH);
+            analogWrite(PIN_MOTOR_B[0], SPEED_2);
+            delay(30);
+            fullStop();
             return "Giro a la izquierda.";
         
         default:

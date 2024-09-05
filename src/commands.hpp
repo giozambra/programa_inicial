@@ -13,62 +13,64 @@
  */
 class Commands {
     private:
-        static const uint8_t CANTIDAD_COMMANDS = 5;
+        static const uint8_t CANTIDAD_COMMANDS = 9;
         static const int COMMANDS[CANTIDAD_COMMANDS];
 
-        static const uint8_t SERVO_PIN_1 = 17;
-        static const uint8_t SERVO_PIN_2 = 16;
+        static const uint8_t SERVO_PIN_1 = 17; // Lineal.
+        static const uint8_t SERVO_PIN_2 = 16; // Angular.
+        static const uint8_t SERVO_PIN_3 = 4;
 
         static const uint8_t PIN_PWMA = 32;
         static const uint8_t PIN_AIN2 = 25;
         static const uint8_t PIN_AIN1 = 26;
         static const uint8_t PIN_STBY = 33;
-        static const uint8_t PIN_PWMB = 12;
+        static const uint8_t PIN_PWMB = 13;
         static const uint8_t PIN_BIN1 = 27;
         static const uint8_t PIN_BIN2 = 14;
 
-        static const uint8_t POSICION_GRADO_MAX = 110;
-        static const uint8_t POSICION_GRADO_INICIAL = 50;
-        static const uint8_t POSICION_GRADOS_1 = 130;
-        static const uint8_t POSICION_GRADOS_2 = 150;
+        // Posiciones del servomecanismo.
+        static const uint8_t POSICION_GRADO_MAX = 100;
+        static const uint8_t POSICION_GRADO_INICIAL = 40;
 
-        // Posición de los servomotores.
-        static const uint8_t POSICION_1 = 110; // Abierta.
-        static const uint8_t POSICION_2 = 75; // Cerrada máxima.
+        // Posiciones de los servomotores.
+        static const uint8_t POSICION_1 = 100; // Abierta.
+        static const uint8_t POSICION_2 = 90; // Cerrada máxima.
+
+        // Posiciones del servomotor pequeño.
+        static const uint8_t POSICION_INICIAL = 0;
 
         static const uint16_t WAIT_TIME = 2000; // Espera entre fases.
-        static const uint8_t SPEED_1 = 150; // Velocidad de giro.
-        static const uint8_t SPEED_2 = 50;
+
+        // Control de distancias con relacion al tiempo min 50 max 256.
+        static const uint8_t SPEED_1 = 50; // Velocidad de giro.
+        static const uint8_t SPEED_2 = 250;
+
         static const int PIN_MOTOR_A[3];
         static const int PIN_MOTOR_B[3];
 
         static Servo servo1;
         static Servo servo2;
+        static Servo servo3; // Pequeño.
 
         enum moveDirection {
-            forward,  // Giro a la derecha.
+            forward, // Giro a la derecha.
             backward // Giro a la izquierda.
         }; // moveDirection.
 
-        enum turnDirection {
-            clockwise,
-            counterClockwise
-        }; // turnDirection.
-
         // Funciones que controlan los motores.
-        static void moveMotorForward(const int pinMotor[3], uint8_t speed);
+        static void enableMotors();
 
-        static void moveMotorBackward(const int pinMotor[3], uint8_t speed);
+        static void moveMotorForward(const int PIN_MOTOR[3], uint8_t speed);
+
+        static void moveMotorBackward(const int PIN_MOTOR[3], uint8_t speed);
 
         static void move(int direction, uint8_t speed, uint8_t motor);
 
         static void disableMotors();
 
-        static void stopMotor(const int pinMotor[3]);
+        static void stopMotor(const int PIN_MOTOR[3]);
 
         static void fullStop();
-
-        static void enableMotors();
 
         // Funciones que controlan los servomotores angular y lineal.
         static String pinServoAngular(uint8_t flag);
