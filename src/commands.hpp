@@ -4,6 +4,7 @@
 // Librerías necesarias.
 #include <Arduino.h>
 #include <ESP32Servo.h>
+#include "globals.hpp"
 #include "utils.hpp"
 #include "statusCode.hpp"
 

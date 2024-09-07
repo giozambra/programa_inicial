@@ -1,6 +1,9 @@
 #include <Arduino.h>
+#include "globals.hpp"
 #include "commands.hpp"
 #include "connection.hpp"
+
+bool autoConnection = true;
 
 void setup() {
   Serial.begin(9600);
@@ -10,7 +13,7 @@ void setup() {
 } // setup().
 
 void loop() {
-  if (!Connection::client.connected()) {
+  if (!Connection::client.connected() && autoConnection) {
     Connection::reconnect();
   }
   

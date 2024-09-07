@@ -175,18 +175,23 @@ uint8_t Commands::obtenerCommand(String payload) {
 String Commands::procesarCommand(uint8_t command) {
     switch (command){
         case 0:
+            autoConnection = false;
             return "Close connection.";
 
         case 1:
+            // Cerrada.
             return pinServoAngular(1);
         
         case 2:
+            // Abierta.
             return pinServoAngular(2);
         
         case 3:
+            // Abierta.
             return pinServoLineal(1);
         
         case 4:
+            // Cerrada.
             return pinServoLineal(2);
         
         case 5:
