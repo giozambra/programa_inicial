@@ -1,11 +1,12 @@
-#ifndef CONNECTION_H
-#define CONNECTION_H
+#ifndef CONNECTION_HPP
+#define CONNECTION_HPP
 
 // Librerías necesarias.
 #include <Arduino.h>
 #include <string>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include "env.hpp"
 #include "statusCode.hpp"
 #include "commands.hpp"
 
@@ -21,7 +22,7 @@ class Connection {
         static const char* password;
         
         static const char* mqttBroker;
-        static const int mqttPort = 1883;
+        static const int mqttPort = MQTT_PORT;
 
         static WiFiClient espClient;
 
@@ -97,4 +98,4 @@ class Connection {
         static void reconnect();
 };
 
-#endif // CONNECTION_H
+#endif // CONNECTION_HPP

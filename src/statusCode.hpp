@@ -4,7 +4,6 @@
 // Librerías necesarias.
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include "connection.hpp"
 
 /**
  * @class StatusCode
