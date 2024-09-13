@@ -9,7 +9,6 @@ std::pair<
 > Connection::credentials = Connection::getCredentials("admin");
 const char* Connection::ssid = credentials.first.c_str();
 const char* Connection::password = credentials.second.c_str();
-// const char* Connection::mqttBroker = "test.mosquitto.org";
 const char* Connection::mqttBroker = MQTT_BROKER;
 
 WiFiClient Connection::espClient;
