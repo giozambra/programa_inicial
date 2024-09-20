@@ -29,25 +29,32 @@ class Commands {
         static const uint8_t PIN_BIN1 = 27;
         static const uint8_t PIN_BIN2 = 14;
 
+        // Motoreductor N3.
+        static const uint8_t PIN_PWMC = 12;
+        static const uint8_t PIN_CIN2 = 22;
+        static const uint8_t PIN_CIN1 = 23;
+
         // Posiciones del servomecanismo.
-        static const uint8_t POSICION_GRADO_MAX = 100;
-        static const uint8_t POSICION_GRADO_INICIAL = 40;
+        static const uint8_t POSICION_GRADO_MAX = 80;
+        static const uint8_t POSICION_GRADO_INICIAL = 10;
 
-        // Posiciones de los servomotores.
-        static const uint8_t POSICION_1 = 100; // Abierta.
-        static const uint8_t POSICION_2 = 90; // Cerrada máxima.
-
-        // Posiciones del servomotor pequeño.
-        static const uint8_t POSICION_INICIAL = 0;
+        // Posiciones de los servomotores lineales.
+        static const uint8_t POSICION_1 = 180; // Abierta.
+        static const uint8_t POSICION_2 = 40; // Cerrada máxima.
 
         static const uint16_t WAIT_TIME = 2000; // Espera entre fases.
 
-        // Control de distancias con relacion al tiempo min 50 max 256.
+        // Control de distancias con relacion al tiempo: mínimo 50, máximo 256.
         static const uint8_t SPEED_1 = 50; // Velocidad de giro.
         static const uint8_t SPEED_2 = 250;
 
         static const int PIN_MOTOR_A[3];
         static const int PIN_MOTOR_B[3];
+        static const int PIN_MOTOR_C[3];
+
+        static uint8_t isServoAngularOpen;
+        static uint8_t isServoLinearOpen;
+        static uint8_t isServoLinearCathOpen;
 
         static Servo servo1;
         static Servo servo2;
@@ -73,10 +80,12 @@ class Commands {
 
         static void fullStop();
 
-        // Funciones que controlan los servomotores angular y lineal.
+        // Funciones que controlan los servomotores.
         static String pinServoAngular(uint8_t flag);
 
-        static String pinServoLineal(uint8_t flag);
+        static String pinServoLinear(uint8_t flag);
+
+        static String pinServoLinearCath(uint8_t flag);
 
     public:
         /**

@@ -7,6 +7,11 @@
 const int Commands::COMMANDS[CANTIDAD_COMMANDS] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 const int Commands::PIN_MOTOR_A[3] = {PIN_PWMA, PIN_AIN2, PIN_AIN1};
 const int Commands::PIN_MOTOR_B[3] = {PIN_PWMB, PIN_BIN2, PIN_BIN1};
+const int Commands::PIN_MOTOR_C[3] = {PIN_PWMC, PIN_CIN2, PIN_CIN1};
+
+uint8_t Commands::isServoAngularOpen = 1;
+uint8_t Commands::isServoLinearOpen = 1;
+uint8_t Commands::isServoLinearCathOpen = 1;
 
 Servo Commands::servo1;
 Servo Commands::servo2;
@@ -33,7 +38,7 @@ void Commands::initPins() {
 
     servo1.write(POSICION_1);
     servo2.write(POSICION_GRADO_INICIAL);
-    servo3.write(POSICION_INICIAL);
+    servo3.write(POSICION_1);
 
     pinMode(PIN_AIN2, OUTPUT);
     pinMode(PIN_AIN1, OUTPUT);
@@ -70,12 +75,20 @@ void Commands::move(int direction, uint8_t speed, uint8_t motor) {
         moveMotorForward(PIN_MOTOR_B, speed);
     }
 
+    if (direction == forward && motor == 3) {
+        moveMotorForward(PIN_MOTOR_C, speed);
+    }
+
     if (direction == backward && motor == 1) {
         moveMotorBackward(PIN_MOTOR_A, speed);
     }
 
     if (direction == backward && motor == 2) {
         moveMotorBackward(PIN_MOTOR_B, speed);
+    }
+
+    if (direction == backward && motor == 3) {
+        moveMotorBackward(PIN_MOTOR_C, speed);
     }
 } // move().
 
@@ -93,36 +106,51 @@ void Commands::fullStop() {
     disableMotors();
     stopMotor(PIN_MOTOR_A);
     stopMotor(PIN_MOTOR_B);
+    stopMotor(PIN_MOTOR_C);
 } // fullStop().
 
 // Funciones que controlan los servomotores angular y lineal.
 String Commands::pinServoAngular(uint8_t flag) {
-    if (flag == 2) {
-        servo2.write(POSICION_GRADO_INICIAL);
-        delay(WAIT_TIME);
-        return "Pinza angular abierta.";
+    if (flag == 0) {
+        servo2.write(POSICION_GRADO_MAX);
+        isServoAngularOpen = 0;
+        return "Pinza angular cerrada.";
     }
 
     if (flag == 1) {
-        servo2.write(POSICION_GRADO_MAX);
-        delay(WAIT_TIME);
-        return "Pinza angular cerrada.";
+        servo2.write(POSICION_GRADO_INICIAL);
+        isServoAngularOpen = 1;
+        return "Pinza angular abierta.";
     }
 } // pinServoAngular().
 
-String Commands::pinServoLineal(uint8_t flag) {
-    if (flag == 2) {
+String Commands::pinServoLinear(uint8_t flag) {
+    if (flag == 0) {
         servo1.write(POSICION_2);
-        delay(WAIT_TIME);
+        isServoLinearOpen = 0;
         return "Pinza lineal cerrada.";
     }
 
     if (flag == 1) {
         servo1.write(POSICION_1);
-        delay(WAIT_TIME);
+        isServoLinearOpen = 1;
         return "Pinza lineal abierta.";
     }
-} // pinServoLineal().
+} // pinServoLinear().
+
+String Commands::pinServoLinearCath(uint8_t flag) {
+    if (flag == 0) {
+        servo3.write(POSICION_2);
+        isServoLinearCathOpen = 0;
+        return "Pinza lineal catéter cerrada.";
+    }
+
+    if (flag == 1) {
+        servo3.write(POSICION_1);
+        isServoLinearCathOpen = 1;
+        return "Pinza lineal catéter abierta.";
+    }
+} // pinServoLinearCath().
 
 /**
  * @brief Valida si el payload JSON contiene un comando válido.
@@ -159,6 +187,7 @@ uint8_t Commands::obtenerCommand(String payload) {
     StatusCode::jsonDoc.clear(); // Se limpia el objeto JSON anterior.
 
     deserializeJson(StatusCode::jsonDoc, payload);
+    Serial.println(payload);
     return StatusCode::jsonDoc["command"];
 } // obtenerCommand().
 
@@ -179,52 +208,150 @@ String Commands::procesarCommand(uint8_t command) {
             return "Close connection.";
 
         case 1:
-            // Cerrada.
-            return pinServoAngular(1);
+            servo1.write(POSICION_1);
+            servo2.write(POSICION_GRADO_INICIAL);
+            servo3.write(POSICION_1);
+
+            isServoLinearOpen = 1;
+            isServoAngularOpen = 1;
+            isServoLinearCathOpen = 1;
+
+            fullStop();
+            return "Inicio.";
         
         case 2:
-            // Abierta.
-            return pinServoAngular(2);
+            servo1.write(POSICION_1);
+            servo2.write(POSICION_GRADO_INICIAL);
+            servo3.write(POSICION_1);
+
+            isServoLinearOpen = 1;
+            isServoAngularOpen = 1;
+            isServoLinearCathOpen = 1;
+
+            fullStop();
+            return "Paro de emergencia.";
         
+        // Control de motoreductores.
+        // Control del motorreductor lineal.
         case 3:
-            // Abierta.
-            return pinServoLineal(1);
+            // Avance guía.
+            if (!isServoAngularOpen) {
+                pinServoAngular(1); // Abre servomotor angular.
+                delay(100);
+            }
+
+            if (isServoLinearOpen) {
+                pinServoLinear(0); // Cierra servomotor lineal.
+                delay(100);
+            }
+            
+            enableMotors();
+            move(forward, SPEED_2, 1);
+            delay(500);
+            fullStop();
+            return "Avance de guía.";
         
         case 4:
-            // Cerrada.
-            return pinServoLineal(2);
-        
-        case 5:
+            // Retroceso guía.
+            if (!isServoAngularOpen) {
+                pinServoAngular(1); // Abre servomotor angular.
+                delay(100);
+            }
+
+            if (isServoLinearOpen) {
+                pinServoLinear(0); // Cierra servomotor lineal.
+                delay(100);
+            }
+            
             enableMotors();
-            move(forward, SPEED_1, 1);
+            move(backward, SPEED_2, 1);
+            delay(500);
+            fullStop();
+            return "Retroceso de guía.";
+        
+        // Control del motorreductor angular.
+        case 5:
+            // Giro de guía a la derecha.
+            if (isServoAngularOpen) {
+                pinServoAngular(0); // Cierra servomotor angular.
+                delay(100);
+            }
+
+            if (!isServoLinearOpen) {
+                pinServoLinear(1); // Abre servomotor lineal.
+                delay(100);
+            }
+            
+            enableMotors();
+            move(forward, SPEED_2, 2);
             delay(100);
             fullStop();
-            return "Avance.";
+            return "Giro de guía a la derecha.";
         
         case 6:
+            // Giro de guía a la izquierda.
+            if (isServoAngularOpen) {
+                pinServoAngular(0); // Cierra servomotor angular.
+                delay(100);
+            }
+
+            if (!isServoLinearOpen) {
+                pinServoLinear(1); // Abre servomotor lineal.
+                delay(100);
+            }
+
             enableMotors();
-            move(backward, SPEED_1, 1);
+            move(backward, SPEED_2, 2);
             delay(100);
             fullStop();
-            return "Retroceso.";
+            return "Giro de guía a la izquierda.";
         
+        // Control del motor lineal catéter.
         case 7:
+            // Avance catéter.
+            if (isServoLinearOpen) {
+                pinServoLinear(0); // Cierra servomotor lineal.
+                delay(100);
+            }
+
+            if (isServoLinearCathOpen) {
+                pinServoLinearCath(0); // Cierra servomotor lineal catéter.
+                delay(100);
+            }
+
+            if (!isServoAngularOpen) {
+                pinServoAngular(1); // Abre servomotor angular.
+                delay(100);
+            }
+
             enableMotors();
-            digitalWrite(PIN_MOTOR_B[1], HIGH);
-            digitalWrite(PIN_MOTOR_B[2], LOW);
-            analogWrite(PIN_MOTOR_B[0], SPEED_2);
-            delay(30);
+            move(forward, SPEED_2, 3);
+            delay(300);
             fullStop();
-            return "Giro a la derecha.";
+            return "Avance de catéter.";
         
         case 8:
+            // Retroceso catéter.
+            if (isServoLinearOpen) {
+                pinServoLinear(0); // Cierra servomotor lineal.
+                delay(100);
+            }
+
+            if (isServoLinearCathOpen) {
+                pinServoLinearCath(0); // Cierra servomotor lineal catéter.
+                delay(100);
+            }
+
+            if (!isServoAngularOpen) {
+                pinServoAngular(1); // Abre servomotor angular.
+                delay(100);
+            }
+
             enableMotors();
-            digitalWrite(PIN_MOTOR_B[1], LOW);
-            digitalWrite(PIN_MOTOR_B[2], HIGH);
-            analogWrite(PIN_MOTOR_B[0], SPEED_2);
-            delay(30);
+            move(backward, SPEED_2, 3);
+            delay(300);
             fullStop();
-            return "Giro a la izquierda.";
+            return "Retroceso de catéter.";
         
         default:
             fullStop();
