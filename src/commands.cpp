@@ -47,6 +47,10 @@ void Commands::initPins() {
     pinMode(PIN_BIN2, OUTPUT);
     pinMode(PIN_BIN1, OUTPUT);
     pinMode(PIN_PWMB, OUTPUT);
+
+    pinMode(PIN_PWMC, OUTPUT);
+    pinMode(PIN_CIN2, OUTPUT);
+    pinMode(PIN_CIN1, OUTPUT);
 } // initPins().
 
 // Funciones que controlan los motores.
