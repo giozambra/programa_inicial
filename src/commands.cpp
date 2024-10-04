@@ -329,7 +329,7 @@ String Commands::procesarCommand(uint8_t command) {
             }
 
             enableMotors();
-            move(forward, SPEED_2, 3);
+            move(backward, SPEED_2, 3);
             delay(300);
             fullStop();
             return "Avance de catéter.";
@@ -352,7 +352,7 @@ String Commands::procesarCommand(uint8_t command) {
             }
 
             enableMotors();
-            move(backward, SPEED_2, 3);
+            move(forward, SPEED_2, 3);
             delay(300);
             fullStop();
             return "Retroceso de catéter.";
