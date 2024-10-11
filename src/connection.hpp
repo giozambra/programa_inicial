@@ -38,9 +38,6 @@ class Connection {
          * @return std::pair<std::string, std::string>
          * Un par que contiene el nombre de usuario y la contraseña asociados con la clave.
          * Si la clave no es reconocida, se devuelve un par vacío.
-         * 
-         * @note Las credenciales están hardcodeadas en la función y no deberían 
-         * ser utilizadas en un entorno de producción por motivos de seguridad.
          */
         static std::pair<std::string, std::string> getCredentials(
             const std::string &key
